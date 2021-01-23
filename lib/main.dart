@@ -14,8 +14,15 @@ class BytebankApp extends StatelessWidget {
   }
 }
 
-class FormularioTransferencia extends StatelessWidget {
+class FormularioTransferencia extends StatefulWidget {
 
+  @override
+  State<StatefulWidget> createState() {
+    return FormularioTransferenciaState();
+  }
+}
+
+class FormularioTransferenciaState extends State<FormularioTransferencia> {
   final TextEditingController _controladorCampoNumeroConta = TextEditingController();
   final TextEditingController _controladorCampoValor = TextEditingController();
 
@@ -25,31 +32,39 @@ class FormularioTransferencia extends StatelessWidget {
       appBar: AppBar(
         title: Text('Criando Transferência'),
       ),
-      body: Column(
-        children: <Widget>[
-          Editor(controlador: _controladorCampoNumeroConta, rotulo: 'Numero da conta', dica: '0000'),
-          Editor(controlador: _controladorCampoValor, rotulo: 'Valor', dica: '0.00', icone: Icons.monetization_on,),
-          RaisedButton(
-            child: Text('Confirmar'),
-            onPressed: () {
-              _criaTransferencia(context);
-            },
-          )
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            Editor(controlador: _controladorCampoNumeroConta,
+                rotulo: 'Numero da conta',
+                dica: '0000'),
+            Editor(
+              controlador: _controladorCampoValor,
+              rotulo: 'Valor',
+              dica: '0.00',
+              icone: Icons.monetization_on,),
+            RaisedButton(
+              child: Text('Confirmar'),
+              onPressed: () {
+                _criaTransferencia(context);
+              },
+            )
+          ],
+        ),
       ),
     );
   }
-  void _criaTransferencia(BuildContext context){
+
+  void _criaTransferencia(BuildContext context) {
     final int numeroConta = int.tryParse(_controladorCampoNumeroConta.text);
     final double valor = double.tryParse(_controladorCampoValor.text);
-    if(numeroConta != null && valor != null) {
+    if (numeroConta != null && valor != null) {
       final transferenciaCriada = Transferencia(valor, numeroConta);
       //debugPrint('$transferenciaCriada');
       Navigator.pop(context, transferenciaCriada);
     }
   }
 }
-
 
 class Editor extends StatelessWidget {
 
@@ -71,8 +86,8 @@ class Editor extends StatelessWidget {
         ),
         decoration: InputDecoration(
           icon: icone != null ? Icon(icone) : null, //if ternario
-            labelText: rotulo,
-            hintText: dica,
+          labelText: rotulo,
+          hintText: dica,
         ),
         keyboardType: TextInputType.number,
       ),
@@ -83,10 +98,10 @@ class Editor extends StatelessWidget {
 
 class ListaTransferencias extends StatefulWidget {
   final List<Transferencia> _transferencias = List();
+
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
-    throw UnimplementedError();
+    return ListaTransferenciasState();
   }
 }
 
@@ -106,20 +121,28 @@ class ListaTransferenciasState extends State<ListaTransferencias> {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add), onPressed: () {
-        final Future<Transferencia> future = Navigator.push(context, MaterialPageRoute(builder: (context) {
+        final Future<Transferencia> future = Navigator.push(
+            context, MaterialPageRoute(builder: (context) {
           return FormularioTransferencia();
         }));
         future.then((transferenciaRecebida) {
-          debugPrint('chegou no then do future');
-          debugPrint('$transferenciaRecebida');
-          widget._transferencias.add(transferenciaRecebida);
+          Future.delayed(Duration(seconds: 1), () {
+            debugPrint('chegou no then do future');
+            debugPrint('$transferenciaRecebida');
+            if (transferenciaRecebida != null) {
+              setState(() {
+                widget._transferencias.add(transferenciaRecebida);
+              });
+            }
+          })
         });
       },),
     );
   }
 }
 
-class ItemTransferencia extends StatelessWidget { // statlles precisa da sobrescrita do build
+class ItemTransferencia extends StatelessWidget {
+  // statlles precisa da sobrescrita do build
 
   final Transferencia _transferencia;
 
